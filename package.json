@@ -1,0 +1,30 @@
+{
+  "name": "risingstack",
+  "version": "0.0.1",
+  "private": true,
+  "author": {
+    "name": "Andras Toth",
+    "email": "andras.toth93@gmail.com",
+    "url": "http://andrastoth.com"
+  },
+  "scripts": {
+    "start": "node ./app.js"
+  },
+  "dependencies": {
+    "babel": "^5.8.23",
+    "co": "^4.6.0",
+    "co-body": "^4.0.0",
+    "emailjs": "^0.3.16",
+    "fs": "0.0.2",
+    "koa": "^1.0.0",
+    "koa-body": "^1.2.1",
+    "koa-jwt": "^1.1.1",
+    "koa-router": "^5.1.2",
+    "mongodb": "^2.0.42",
+    "nodemailer": "^1.4.0",
+    "robe": "^0.11.4"
+  },
+  "devDependencies": {
+    "mocha": "^2.3.1"
+  }
+}
