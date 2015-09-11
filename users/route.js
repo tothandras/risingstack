@@ -6,30 +6,40 @@ const db = require('../database/db');
 const publicKey = fs.readFileSync(config.jwt.publicKey);
 
 module.exports = function *(next) {
+  // verify token
+  const token = this.request.query.jwt;
+  let user;
   try {
-    var user = yield jwt.verify(
-      this.request.query.jwt,
-      publicKey,
-      {algorithm: config.jwt.algorithm}
-    );
-   } catch(e) {
-     this.throw(401, 'Invalid token');
-   }
+    user = yield jwt.verify(token, publicKey, {
+      algorithm: config.jwt.algorithm,
+    });
+  } catch (error) {
+    console.log(error);
+    this.throw(401, 'Invalid token');
+  }
 
-   const collection = yield db.collection;
+  const collection = yield db.collection;
+  const registeredUser = yield collection.findOne({
+    email: user.email,
+  });
+  if (!registeredUser) {
+    const error = `No user is registered with email address ${user.email}`;
+    console.log(error);
+    this.throw(401, error);
+  }
+  if (token !== registeredUser.token) {
+    const error = 'Invalid token';
+    console.log(error);
+    this.throw(401, error);
+  }
 
-   const registeredUser = yield collection.findOne({
-     email: user.email
-   });
-   if (!registeredUser || publicKey !== registeredUser.token) {
-     this.throw(401, 'Invalid token');
-   }
+  // create the list of users
+  const users = yield collection.find();
+  const listElements = users.map(u => `<li>${u.name} - ${u.email}</li>`);
+  this.body = '<ul>';
+  this.body += listElements.join('');
+  this.body += '</ul>';
 
-   const users = yield collection.find();
-   const listElements = users.map(u => `<li>${u.name} - ${u.email}</li>`);
-   this.body = '<ul>';
-   this.body += listElements.join('\n');
-   this.body += '</ul>';
-
-   yield next;
+  this.status = 200;
+  yield next;
 };

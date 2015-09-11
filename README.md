@@ -21,13 +21,19 @@ Node.js - apart from this, it is your call. Just be sure that you can answer the
 
 Unit/integration, you name it - the more, the merrier.
 
-## Implementation
+----------
 
 ### Run
 
-First launch a local MongoDB instance.
+Launch a local MongoDB instance.
 ```shell
-# mongod
+$ mongod
+```
+
+Generate RSA keys
+```shell
+$ openssl genrsa -out app.rsa 1024
+$ openssl rsa -pubout -in app.rsa -out app.rsa.pub
 ```
 
 Install dependencies and start the server.
@@ -36,9 +42,15 @@ $ npm install
 $ npm start
 ```
 
-### Run in a docker container
-```shell
-
-```
+### Environment variables
+* MONGO_URL (default: `127.0.0.1`)
+* PUBLIC_KEY (default: `app.rsa.pub`)
+* PRIVATE_KEY (default: `app.rsa`)
+* EMAIL_SERVICE (see [supported services](https://github.com/andris9/nodemailer-wellknown#supported-services))
+* EMAIL_USER
+* EMAIL_PASSWORD
 
 ### Test
+```
+$ npm run test
+```

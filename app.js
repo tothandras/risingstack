@@ -1,19 +1,21 @@
-require('babel/register')({
-  // this will override `node_modules` ignoring
-  ignore: false
-});
+// babel register
+require('./common/babel-register');
+
 const koa = require('koa');
 const router = require('koa-router')();
 const config = require('./config/config');
 const registration = require('./registration/route');
 const users = require('./users/route');
-const db = require('./database/db');
 
-var app = koa();
+const app = koa();
+module.exports = app;
 
 router.post('/registration', registration);
-router.get('/users', users)
-app.use(router.routes())
+router.get('/users', users);
+app.use(router.routes());
 
-app.listen(config.port);
-console.log('Listening on port ' + config.port);
+// start app
+if (!module.parent) {
+  app.listen(config.port);
+  console.log('Listening on port ' + config.port);
+}

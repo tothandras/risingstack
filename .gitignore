@@ -1,4 +1,4 @@
 node_modules
 npm-debug.log
-demo.rsa
-demo.rsa.pub
+*.rsa
+*.rsa.pub

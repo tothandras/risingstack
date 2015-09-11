@@ -8,14 +8,16 @@
     "url": "http://andrastoth.com"
   },
   "scripts": {
-    "start": "node ./app.js"
+    "start": "node ./app",
+    "lint": "eslint .",
+    "base-test": "mocha --require common/babel-register ./**/*.spec.js",
+    "test": "npm run base-test && npm run lint"
   },
   "dependencies": {
     "babel": "^5.8.23",
     "co": "^4.6.0",
     "co-body": "^4.0.0",
     "emailjs": "^0.3.16",
-    "fs": "0.0.2",
     "koa": "^1.0.0",
     "koa-body": "^1.2.1",
     "koa-jwt": "^1.1.1",
@@ -25,6 +27,13 @@
     "robe": "^0.11.4"
   },
   "devDependencies": {
-    "mocha": "^2.3.1"
+    "babel-eslint": "^4.1.1",
+    "chai": "^3.2.0",
+    "chai-spies": "^0.7.0",
+    "eslint": "^1.4.1",
+    "eslint-config-airbnb": "0.0.8",
+    "mocha": "^2.3.1",
+    "sinon-es6": "0.0.3",
+    "supertest": "^1.1.0"
   }
 }

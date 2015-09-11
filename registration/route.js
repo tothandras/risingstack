@@ -5,10 +5,11 @@ const parse = require('co-body');
 const config = require('../config/config');
 const db = require('../database/db');
 
-const privateKey = fs.readFileSync(config.jwt.privateKey);
-
 module.exports = function *(next) {
-  var user = yield parse(this);
+  const privateKey = fs.readFileSync(config.jwt.privateKey);
+  const user = yield parse(this);
+
+  // ensure required fields
   if (!user.name) {
     this.throw(400, '.name is required');
   }
@@ -16,57 +17,62 @@ module.exports = function *(next) {
     this.throw(400, '.email is required');
   }
 
-  var claims = {
-      name: user.name,
-      email: user.email
+  // create a jwt token
+  const claims = {
+    name: user.name,
+    email: user.email,
   };
-  var token = jwt.sign(claims, privateKey, {algorithm: config.jwt.algorithm});
+  const token = jwt.sign(claims, privateKey, {
+    algorithm: config.jwt.algorithm,
+  });
 
-  var mailConfig;
-  var sender = 'noreply@risingstack.com';
+  // send an email including a link to /users
+  let mailConfig;
   if (config.email.service && config.email.user && config.email.password) {
-    sender = config.email.user;
     mailConfig = {
       service: config.email.service,
       auth: {
         user: config.email.user,
-        pass: config.email.password
-      }
+        pass: config.email.password,
+      },
     };
   }
-
-  var transporter = nodemailer.createTransport(mailConfig);
+  const transporter = nodemailer.createTransport(mailConfig);
   try {
+    // wrap the callback-based API
     yield new Promise((resolve, reject) => {
       transporter.sendMail({
-        from: sender,
+        from: 'noreply@risingstack.com',
         to: user.email,
         subject: 'User list',
         html:
           `<p>
             Hi ${user.name},
             check out all the <a href="${this.protocol}://${this.host}/users?jwt=${token}">users</a>!
-          </p>`
+          </p>`,
       }, (error, info) => {
         if (error) {
           return reject(error);
         }
-        resolve(info)
+        resolve(info);
       });
     });
   } catch (error) {
-    this.throw(400, error);
+    console.log(error);
+    this.throw(400, `Failed to send email to ${user.email}`);
   }
 
-  var collection = yield db.collection;
+  const collection = yield db.collection;
   try {
-    var item = yield collection.insert({
+    // insert the new user into the database
+    yield collection.insert({
       token,
       name: user.name,
       email: user.email,
     });
   } catch (error) {
-    this.throw(400, `Email address (${user.email}) is already registered`);
+    console.log(error);
+    this.throw(400, `A user with email address ${user.email} is already registered`);
   }
 
   this.status = 200;
